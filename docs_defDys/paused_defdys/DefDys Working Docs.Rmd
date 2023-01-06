@@ -1,0 +1,680 @@
+---
+title: 'Defining Dystopia: Text Analysis'
+author: "audra white"
+date: "3/11/2021"
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+### Set Up, Load Libraries
+
+```{r setup, include=FALSE}
+
+# Set Up
+library(devtools)
+library(gitcreds)
+library(renv)
+ library(knitr)
+library(markdown)
+
+# Basic Packages
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+# Text Analysis
+library(readtext) 
+library(quanteda)
+library(quanteda.textmodels)
+library(quanteda.textstats)
+library(quanteda.textplots)
+
+knitr::opts_chunk$set(message = TRUE, include = FALSE)
+```
+
+# CODE GROUP: CORPA
+
+    absCorp
+    refCorp
+
+## CODE: Corpa: absCorp
+
+    ReadText
+
+rTx_2953 rTX1_3772
+
+```{r ReadText: 2 Abstract CSV , include=FALSE}
+# Corpus consisting of 2958 documents and 86 docvars.
+# [1] 2958   88
+
+rTx_2953 <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/DACSS_FL21/DACSS_602_DefiningDystopia/602_DefDys_RProj/CLEANED-DefDys_Ebsco_Nov11_2953.csv")
+
+
+# Corpus consisting of 2958 documents and 86 docvars.
+# [1] 3772   88
+
+rTX1_3772 <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/DACSS_FL21/DACSS_602_DefiningDystopia/602_DefDys_RProj/DefDys_Ebsco_Nov11_3772.csv")
+```
+
+    Corpa
+
+absCorp
+
+```{r Corpa: 2 Abstract rTXT , include=FALSE}
+# Adding corpus objects together
+# Corpa of 6725 journal articles with wide search terms for "Dystopia+ and Utopia+"
+
+corp1 <- corpus(rTX1_3772[1:42])
+corp2 <- corpus(rTx_2953[1:42])
+absCorp <- corp1 + corp2
+```
+
+## CODE: Corpa: refCorp
+
+Curated Reference Document.csv
+
+    ReadText
+
+rtx_DysRef
+
+    Corpa
+
+refCorp
+
+```{r Build Corpa, include=FALSE}
+# Import second corpa of curated reference documents 
+# [1]  50 257
+
+rtx_DysRef <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/DACSS_FL21/DACSS_602_DefiningDystopia/602_Dystopia_Data/DefDys_Zotero/DefDys_Ref_Dec2.csv")
+
+refCorp <- corpus(rtx_DysRef)
+```
+
+# CODE GROUP: Docvars Categories
+
+    Document-level variables
+
+Title Abstract.Note Manual.Tags Automatic.Tags Item.Type
+Publication.Title Publication.Year abscorp - Library.Catalog
+
+    ref Doc Group
+
+```{r Docvars: refCorp Group, echo=TRUE}
+refDoc_title <- docvars(refCorp, field = "Title")
+refDoc_absNote <- docvars(refCorp, field = "Abstract.Note")
+refDoc_manTags <- docvars(refCorp, field = "Manual.Tags")
+refDoc_autoTags <- docvars(refCorp, field = "Automatic.Tags" )
+refDoc_itemType <- docvars(refCorp, field = "Item.Type")
+refDoc_pubTitle <- docvars(refCorp, field = "Publication.Title")
+refDoc_pubYear <- docvars(refCorp, field = "Publication.Year")
+
+```
+
+refDoc_title refDoc_absNote refDoc_manTags refDoc_autoTags
+refDoc_itemType refDoc_pubTitle refDoc_pubYear
+
+    absDoc Group
+
+```{r Docvars: asbCorp Group , echo=TRUE}
+
+absDoc_title <- docvars(absCorp, field = "Title")
+absDoc_absNote<- docvars(absCorp, field = "Abstract.Note")
+absDoc_manTags <- docvars(absCorp, field = "Manual.Tags")
+absDoc_autoTags <- docvars(absCorp, field = "Automatic.Tags" )
+absDoc_itemType <- docvars(refCorp, field = "Item.Type" )
+absDoc_pubTitle <- docvars(absCorp, field = "Publication.Title")
+absDoc_pubYear <- docvars(absCorp, field = "Publication.Year")
+absDoc_libCat <- docvars(absCorp, field = "Library.Catalog")
+
+```
+
+absDoc_title absDoc_absNote absDoc_manTags absDoc_autoTags
+absDoc_itemType absDoc_pubTitle absDoc_pubYear absDoc_libCat
+
+# CODE GROUP: CORPUS SUBSET
+
+## CODE: Corpus Subset: Signal
+
+Document Level Variables: Title Manual.Tags
+
+    Signal - Corpus Subset
+
+```{r Corpus Subset: refCorp: Signal, include=FALSE}
+
+s_tle_refCorpSub <- corpus_subset(refCorp, Title %in% 
+  c("Dystopia", "Dystopias","Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+  "Utopia","Utopias", "Utopian","Utopianism")
+  )
+
+s_mTag_refCorpSub <- corpus_subset(refCorp, Manual.Tags %in%
+   c("Dystopia", "Dystopias","Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+  "Utopia","Utopias", "Utopian","Utopianism")
+  )                                  
+
+```
+
+s_tle_refCorpSub s_mTag_refCorpSub
+
+```{r Corpus Subset: absCorp: Signal, include=FALSE}
+
+s_tle_absCorpSub <- corpus_subset(absCorp, Title %in% 
+  c("Dystopia", "Dystopias","Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+  "Utopia","Utopias", "Utopian","Utopianism")
+  )   
+
+s_mTag__absCorpSub <- corpus_subset(absCorp, Manual.Tags %in%
+  c("Dystopia", "Dystopias","Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+  "Utopia","Utopias", "Utopian","Utopianism")
+  )   
+
+```
+
+s_title_absCorpSub s_mTag\_\_absCorpSub
+
+## CODE: Corpus Subset: Noise
+
+Document Level Variables: Title Manual.Tags
+
+```{r Corpus Subset: refCorp: Noise;, include=FALSE}
+
+n_tle_refCorpSub <- corpus_subset(refCorp, Title %in% 
+   c("apocalypse", "apocalyptic","post-apocalypse",
+  "end of the world", "post apocalyptic",
+  "Technology", "Society","Fiction", "Science Fiction",
+  "Novel", "Literature")
+)
+
+
+n_mTag_refCorpSub <- corpus_subset(refCorp, Manual.Tags %in% 
+  c("apocalypse", "apocalyptic","post-apocalypse",
+  "end of the world", "post apocalyptic",
+  "Technology", "Society","Fiction", "Science Fiction",
+  "Novel", "Literature")
+)
+
+
+```
+
+n_tle_refCorpSub n_MTag_refCorpSub
+
+```{r Corpus Subset: absCorp: Noise;, include=FALSE}
+
+n_tle_absCorpSub <- corpus_subset(absCorp, Title %in% 
+  c("apocalypse", "apocalyptic","post-apocalypse",
+  "end of the world", "post apocalyptic",
+  "Technology", "Society","Fiction", "Science Fiction",
+  "Novel", "Literature")
+)
+
+
+n_mTag_absCorpSub <- corpus_subset(absCorp, Manual.Tags %in%
+  c("apocalypse", "apocalyptic","post-apocalypse",
+  "end of the world", "post apocalyptic",
+  "Technology", "Society","Fiction", "Science Fiction",
+  "Novel", "Literature")
+)
+
+```
+
+n_tle_absCorpSub n_mTag_absCorpSub
+
+# RETURNS: CORPUS SUBSET: Signal & Noise
+
+    Signal 
+      refCorpSub Group
+
+s_tle_refCorpSub returns: 11 s_mTag_refCorpSub returns: 1
+
+    Signal 
+      absCorpSub Group
+
+s_tle_absCorpSub returns: 0 s_mTag\_\_absCorpSub returns: 0
+
+    Noise
+      refCorpSub Group
+
+n_tle_refCorpSub returns: 14 n_MTag_refCorpSub returns: 1
+
+    Noise
+      absCorp Group
+
+n_tle_absCorpSub returns: 7 n_mTag_absCorpSub returns: 0
+
+# CODE GROUP: Tokens
+
+## CODE: Tokens: Corpa
+
+    absTok
+    refTok
+
+```{r Tokenize: AbsCorp & RefCorp eval=FALSE, include=FALSE}
+# Tokenize 
+absTok <- tokens(absCorp, remove_punct = TRUE)
+refTok <- tokens(refCorp, remove_punct = TRUE)
+
+```
+
+## CODE: Tokens: Docvars Categories
+
+Docvars Categories Title Abstract.Note Manual.Tags Automatic.Tags
+Item.Type Publication.Title Publication.Year //numbers cannot be
+tokenized// abscorp - Library.Catalog
+
+      refTok Group 
+
+```{r Tokenize: RefDoc Group, echo=TRUE}
+
+title_refTok <- tokens(refDoc_Title)
+
+absNote_refTok <- tokens(refDoc_AbsNote)
+
+manTag_refTok <- tokens(refDoc_ManTags)
+
+itmTyp_refTok <- tokens(refDoc_itemType)
+
+pubTle_refTok <- tokens(refDoc_pubTitle)
+
+```
+
+title_refTok absNote_refTok manTag_refTok itmTyp_refTok pubTle_refTok
+
+    absTok Group
+
+```{r Tokenize: absDoc Group, echo=TRUE}
+
+title_absTok <- tokens(absDoc_Title)
+
+absNote_absTok <- tokens(absDoc_AbsNote)
+
+manTag_absTok <- tokens(absDoc_manTags)
+
+itmTyp_absTok <- tokens(absDoc_itemType)
+
+cent_absTok <- tokens(absDoc_Cent)
+```
+
+title_absTok absNote_absTok manTag_absTok itmTyp_absTok cent_absTok
+
+## CODE: Token KWIC: Signal: Dyo Uto
+
+        Titles
+        Abstract Notes
+        Manual Tags
+      
+    Signal refKwt Group
+
+```{r Kwic: Signal: refTok Group}
+
+     #Titles
+sUto_tle_refKwt <- 
+  kwic(title_refTok, pattern = 
+         c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+sDyo_tle_refKwt <- 
+  kwic(title_refTok, pattern = 
+        c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+    # Abstract Note
+sUto_aNote_refKwt <- 
+  kwic(absNote_refTok, pattern = 
+        c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+  
+
+sDyo_aNote_refKwt <- 
+  kwic(absNote_refTok, pattern = 
+         c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+    # Manual Tags
+sUto_mTags_refKwt <- 
+  kwic(manTags_refTok,pattern = 
+      c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)   
+
+sDyo_mTags_refKwt <- 
+  kwic(manTags_refTok,pattern = 
+       c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+```
+
+Signal: Titles sUto_tle_refKwt sDyo_tle_refKwt
+
+Signal: Abstract Note sUto_aNote_refKwt sDyo_aNote_refKwt
+
+Signal: Manual Tags sUto_mTags_refKwt sDyo_mTags_refKwt
+
+    Signal: absKwt Group 
+
+```{r Kwic: Signal: absTok Group}
+
+    # Title
+sUto_tle_absKwt <- 
+  kwic(title_absTok, pattern = 
+       c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+sDyo_tle_absKwt <- 
+  kwic(title_absTok, pattern = 
+        c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+    # Abstract Note
+sUto_aNote_absKwt <- 
+  kwic(absNote_absTok, pattern = 
+        c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+sDyo_aNote_absKwt <- 
+  kwic(absNote_absTok, pattern = 
+      c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+    # Manual Tags
+sUto_mTags_absKwt <- 
+  kwic(manTags_absTok,pattern = 
+     c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+sDyo_mTags_absKwt <- 
+  kwic(manTags_absTok,pattern = 
+    c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+```
+
+Signal: Titles sUto_tle_absKwt sDyo_tle_absKwt
+
+Signal: Abstract Note sUto_aNote_absKwt sDyo_aNote_absKwt
+
+Signal: Manual Tags sUto_mTags_absKwt sDyo_mTags_absKwt
+
+## CODE: Token KWIC: Signal: Wildcard: Uti\* Dyi\*
+
+Signal Wildcard sUti = Utopi *sDyi = Dystopi*
+
+    refKwt Wildcard Group
+
+```{r Kwic: refTok Group: Signal: Wildcards, include=FALSE}
+
+    # Titles 
+sUti_tle_refKwt <- kwic(title_refTok,
+          pattern = "utopi*", )
+
+sDyi_tle_refKwt <- kwic(title_refTok,
+          pattern = "dystopi*", )
+
+    # Abstract Note
+sUti_aNote_refKwt <- kwic(absNote_refTok,
+          pattern = "utopi*", )
+
+sDyi_aNote_refKwt <- kwic(absNote_refTok,
+          pattern = "dystopi*",)
+
+    # Manual Tags
+sUti_mTags_refKwt <- kwic(manTags_refTok,
+          pattern = "utopi*", )
+
+sDyi_mTags_refKwt <- kwic(manTags_refTok,
+          pattern = "dystopi*", )
+
+```
+
+Signal: Wildcards: Titles sUti_tle_refKwt sDyi_tle_refKwt
+
+Signal: Wildcards: Abstract Note sUti_aNote_refKwt sDyi_aNote_refKwt
+
+Signal: Wildcards: Manual Tags sUti_mTags_refKwt sDyi_mTags_refKwt
+
+      absKwt Wildcard Group
+
+```{r Kwic: Signal: absTok Group: Wildcard, eval=FALSE, include=FALSE}
+
+# Titles 
+sUti_tle_absKwt <- kwic(title_absTok,
+          pattern = "utopi*", )
+
+sDyi_tle_absKwt <- kwic(title_absTok,
+          pattern = "dystopi*", )
+
+    # Abstract Note
+sUti_aNote_absKwt <- kwic(absNote_absTok,
+          pattern = "utopi*", )
+
+sDyi_aNote_absKwt <- kwic(absNote_absTok,
+          pattern = "dystopi*",)
+
+    # Manual Tags
+sUti_mTags_absKwt <- kwic(manTags_absTok,
+          pattern = "utopi*", )
+
+sDyi_mTags_absKwt <- kwic(manTags_absTok,
+          pattern = "dystopi*", )
+
+```
+
+Signal: Wildcards: Titles sUti_tle_absKwt sDyi_tle_absKwt
+
+Signal: Wildcards: Abstract Note sUti_aNote_absKwt sDyi_aNote_absKwt
+
+Signal: Wildcards: Manual Tags sUti_mTags_absKwt sDyi_mTags_absKwt
+
+## CODE: Token KWIC: Noise: A,T, D, S
+
+    Noise: refKwt Group
+
+```{r Kwic: Noise: refTok Group, eval=FALSE, include=FALSE}
+
+          # Titles 
+nApo_tle_refKwt <- kwic(title_refTok,
+          pattern = c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+          )
+
+nTop_tle_refKwt <- kwic(title_refTok,
+          pattern = c("Technology", "Society","Fiction")
+          )
+ 
+nSub_tle_refKwt <- kwic(title_refTok,
+          pattern = c("Novel", "Literature")
+          )
+
+
+          # Abstract Note
+nApo_aNote_refKwt <- kwic(absNote_refTok ,
+          pattern = c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+          )
+
+nSub_aNote_refKwt  <- kwic(absNote_refTok ,
+          pattern = c("Novel", "Literature")
+          ) 
+            
+
+ nTop_aNote_refKwt <- kwic(absNote_refTok ,
+          pattern = c("Technology", "Society","Fiction")
+          )
+
+          #Manual Tags
+ nApo_mTag_refKwt <- kwic(manTags_refTok ,
+          pattern = c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+          )
+
+ nSub_mTag_refKwt  <- kwic(manTags_refTok ,
+          pattern = c("Novel", "Literature")
+          ) 
+            
+
+nTop_mTag_refKwt <- kwic(manTags_refTok ,
+          pattern = c("Technology", "Society","Fiction")
+          )
+
+```
+
+Noise: Titles nApo_tle_refKwt nTop_tle_refKwt nSub_tle_refKwt
+
+Noise: Abstract Note nApo_aNote_refKwt nSub_aNote_refKwt
+nTop_aNote_refKwt
+
+Noise: Manual Tags nApo_mTag_refKwt nSub_mTag_refKwt nTop_mTag_refKwt
+
+    Noise: absKwt Group  
+
+```{r Kwic: Noise: absTok Group, eval=FALSE, include=FALSE}
+
+# Titles 
+nApo_tle_absKwt  <- 
+  kwic( title_absTok, pattern = 
+          c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+        )
+
+nSub_tle_absKwt  <-
+  kwic( title_absTok, pattern = 
+          c("Novel", "Literature")
+        ) 
+            
+
+nTop_tle_absKwt <- 
+  kwic( title_absTok, pattern = 
+          c("Technology", "Society","Fiction")
+        )
+
+# Abstract Note
+nApo_aNote_absKwt <- 
+  kwic( absNote_absTok, pattern = 
+          c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+        )
+
+nSub_aNote_absKwt  <- 
+  kwic( absNote_absTok, pattern = 
+          c("Novel", "Literature")
+        ) 
+            
+nTopaNote_absKwt <- 
+  kwic(absNote_absTok,
+       pattern = 
+         c("Technology", "Society","Fiction")
+       )
+
+#Manual Tags
+nApo_mTag_refKwt <- 
+  kwic( manTag_absTok, pattern = 
+          c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+        )
+
+nSub_mTag_refKwt  <- 
+  kwic( manTag_absTok, pattern = 
+          c("Novel", "Literature")
+        ) 
+            
+
+nTop_mTag_refKwt <- 
+  kwic( manTag_absTok, pattern = 
+          c("Technology", "Society","Fiction")
+        )
+
+```
+
+Noise: Titles nApo_tle_absKwt nTop_tle_absKwt nSub_tle_refKwt
+
+Noise: Abstract Note nApo_aNote_absKwt nSub_aNote_absKwt
+nTop_aNote_refKwt
+
+Noise: Manual Tags nApo_mTag_absKwt nSub_mTag_absKwt nTop_mTag_absKwt
+
+# VISUAL: WordCloud
+
+    TextPlot: Word Cloud Title : Signal & Noise
+
+```{r CODE:   Wordcloud: Dys Wild Card Title, echo=FALSE}
+ 
+tleRefCorp 
+
+# Tokenize & DTM
+  
+  tle_Dtm <- tleRefCorp %>%
+    tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en')) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+# Generate Word Cloud
+  
+textplot_wordcloud(tle_Dtm, max_words = 10)
+textplot_wordcloud(tle_Dtm, max_words = 25)
+textplot_wordcloud(tle_Dtm, max_words = 50)
+
+```
+
+# 
+
+# 
+
+# CODE GROUP: Works But Not Well
+
+## Chunks: DTM (Document Term Matrix)
+
+Currently not very usefull
+
+    Wordclouds & Freq:
+    No features left after trimming with min_count = 3
+
+### CODE: DTM: Corpa
+
+    refDtm
+    absDtm
+
+```{r DTM: refTok absTok, include=FALSE}
+
+refDtm <- dfm(refTok)
+refDtm
+
+
+absDtm <- dfm(absTok)
+absDtm
+
+summary(absDtm)
+
+```
+
+### CODE: DTM: Corpa Subset
+
+      nTleDtm
+      
+
+```{r TEST: DTM: Preprocess, Filter; }
+n_tleTok <- n_tle_refCorpSub %>%
+  tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   ## tokenize, removing unnecessary noise
+  tokens_tolower %>%                                                     ## normalize
+  tokens_remove(stopwords('en')) %>%                                     ## remove stopwords (English)
+  tokens_wordstem                                                        ## stemming
+n_tleTok
+
+nTleDtm <- dfm(n_tleTok)
+nTleDtm
+
+summary(nTleDtm)
+
+```
+
+    accepts:
+
+refCorpSub n_tle_refCorpSub

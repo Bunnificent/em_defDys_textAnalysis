@@ -1,0 +1,112 @@
+---
+title: "Defining Dystopia Slide Deck"
+author: "audra white"
+date: "12/1/2021"
+output: 
+  beamer_presentation: 
+    toc: yes
+    incremental: yes
+    fonttheme: professionalfonts
+    fig_caption: yes
+    keep_tex: yes
+---
+### Set Up, Load Libraries
+```{r setup, include=FALSE}
+
+# Set Up
+library(devtools)
+library(gitcreds)
+library(renv)
+
+# Basic Packages
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+# Text Analysis
+library(readtext) 
+library(quanteda)
+library(quanteda.textmodels)
+library(quanteda.textstats)
+library(quanteda.textplots)
+
+knitr::opts_chunk$set(warning = FALSE, message = TRUE)
+
+```
+
+# DefDys Code
+## Corpa
+```{r Build Corpa, include=FALSE}
+# Corpus consisting of 2958 documents and 86 docvars.
+# [1] 2958   88
+
+rTx_2953 <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/DACSS_FL21/DACSS_602_DefiningDystopia/602_DefDys_RProj/CLEANED-DefDys_Ebsco_Nov11_2953.csv")
+
+
+# Corpus consisting of 2958 documents and 86 docvars.
+# [1] 3772   88
+
+rTX1_3772 <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/DACSS_FL21/DACSS_602_DefiningDystopia/602_DefDys_RProj/DefDys_Ebsco_Nov11_3772.csv")
+  
+
+# Adding corpus objects together
+# Corpa of 6725 journal articles with wide search terms for "Dystopia+ and Utopia+"
+
+corp1 <- corpus(rTX1_3772[1:20])
+corp2 <- corpus(rTx_2953[1:20])
+absCorp <- corp1 + corp2
+
+
+# Import second corpa of curated reference documents 
+# [1]  50 257
+
+rtx_DysRef <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/DACSS_FL21/DACSS_602_DefiningDystopia/602_Dystopia_Data/DefDys_Zotero/DefDys_Ref_Dec2csv.csv")
+
+refCorp <- corpus(rtx_DysRef[1:15])
+
+ 
+```
+
+## R Markdown
+
+
+
+# Text Analysis Slides
+
+## Sample Slides
+### Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+
+
+### Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+
+
+### Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+
+
+## Defining Dystopia: Slides
+
+### Intro: Research Project
+### Intro: Research Subject
+### Intro: Research Subject
+
+## Copra Analysis: Overview
+### Me: 
+### Machine: Topic Modeling
+
+## Corpa Analysis: Signal VS Noise
+### Me: 
+### Machine: Topic Modeling

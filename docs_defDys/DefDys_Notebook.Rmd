@@ -1,0 +1,454 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Empty Working Code: 
+## EMPTY code: Token Select:
+
+ <- kwic( , pattern = c( ))
+
+  <- tokens_select(,
+              pattern = phrase (" *"))
+
+
+
+#
+#
+# In Progress
+# WRITING: 
+
+## CODE GROUP: WordCloud: TextPlot: Kwic
+### Category Variables
+  Title
+  Abstract.Note
+  Manual.Tags
+  Automatic.Tags
+  Item.Type
+  Publication.Title
+  Publication.Year 
+  abscorp - Library.Catalog
+
+## CODE: Corpa: Kwic: Signal vs Noise
+
+### Combine Variables into corpa by category
+
+  cAbs_ <- corpus( )
+  cRef_ <- corpus( )
+
+corp  <-  + 
+
+    
+## Cannot Combine
+
+    cUti_TleCorp <- 
+      cRef_uti_Tle + cAbs_uti_Tle  
+    
+    nTle_Corp <- 
+      cRef_apo_Tle + cRef_top_Tle +  cRef_sub_Tle
+
+##   
+```{r CODE: CORPUS: Kwic: Titles, include=FALSE}
+
+# TITLE
+  
+  # Utopia
+    cRef_uti_Tle <- 
+      corpus(sUti_tle_refKwt)
+    
+    cAbs_uti_Tle <-
+      corpus(sUti_tle_absKwt)
+      
+    cRef_uto_Tle <-
+      corpus(sUto_tle_refKwt)
+    cAbs_uto_Tle <-
+      corpus(sUto_tle_absKwt)
+  
+  # Dystopia
+    cRef_dyi_Tle  <- 
+      corpus(sDyi_tle_refKwt)
+    
+    cAbs_dyi_Tle  <- 
+      corpus(sDyi_tle_absKwt)
+    
+    cRef_dyo_Tle <-
+      corpus(sDyo_tle_refKwt )
+    
+    cAbs_dyo_Tle <-
+      corpus(sDyo_tle_absKwt )
+    
+  # Noise
+    cRef_apo_Tle <- 
+      corpus(nApo_tle_refKwt)
+    
+    cRef_top_Tle <- 
+      corpus(nTop_tle_refKwt)
+    
+    cRef_sub_Tle <- 
+      corpus(nSub_tle_refKwt)
+    
+    
+# Combine Title Corpa, do not duplicate Titles 
+  
+     <- corpus(sUti_aNote_refKwt )
+    cRef_dyi_Nte <- corpus(sDyi_aNote_refKwt )
+    cRef_ <- corpus(sDyo_aNote_refKwt)
+    cRef_uti_mTags <- corpus(sUto_mTags_refKwt)
+
+ 
+  tle_DyiCorp  <-
+  cRef_dyi_Tle + cAbs_dyi_Tle
+    
+    
+   cRef_apo_Tle <- absCorp + cRef_uti_Tle + cRef_dyi_Tle + cRef_apo_Tle + refCorp_Signal 
+      
+```
+
+    TextPlot: Word Cloud Title : Signal & Noise
+```{r CODE:   Wordcloud: Dys Wild Card Title, echo=FALSE}
+ 
+tleRefCorp 
+
+# Tokenize & DTM
+  
+  tle_Dtm <- tleRefCorp %>%
+    tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en')) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+# Generate Word Cloud
+  
+textplot_wordcloud(tle_Dtm, max_words = 10)
+textplot_wordcloud(tle_Dtm, max_words = 25)
+textplot_wordcloud(tle_Dtm, max_words = 50)
+
+```
+
+
+
+Error in `[<-.data.frame`(`*tmp*`, field, value = "pre") : 
+replacement has 1 row, data has 0
+
+topi_trKw <- kwic(tokens(tleRefCorp), 'book')
+  topiTle_RefCorp  <- corpus(topi_trKw)
+
+
+### ref Docvars Group 
+
+      refDoc
+
+    refDoc_title 
+    refDoc_absNote
+    refDoc_manTags
+    refDoc_autoTags
+    refDoc_itemType
+    refDoc_pubTitle
+    refDoc_pubYear
+
+
+```{r}
+
+ <- kwic(tokens( ), '*topia*', window = 10)
+head(TK, 5)
+dim(TK)
+# [1] 375   7
+# terror <- kwic(tokens(corp), 'terror*')
+terror_corp <- corpus(TK)
+terror_dtm <- terror_corp %>%
+  tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   
+  tokens_tolower %>%                                                    
+  tokens_remove(stopwords('en')) %>%                                     
+  tokens_wordstem %>%
+  dfm
+
+textplot_wordcloud(terror_dtm, max_words = 50)
+
+```
+
+###  abs Docuvar Group
+
+      absDoc
+  
+    absDoc_Cent
+    absDoc_Title
+    absDoc_AbsNote
+    absDoc_ManTags
+    absDoc_AutoTags
+    absDoc_ItemType 
+
+
+
+#
+## TEST CODE: KWIC: analysis on a specific search term.
+
+```{r test: textplot Wordcloud, echo=FALSE}
+
+  c1a <- corpus(sUti_tle_refKwt)
+  c12b <- corpus(sDyi_tle_refKwt )
+
+
+wildCorp <- c1a + c12b 
+
+terror_dtm <- wildCorp %>%
+  
+  tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   
+  
+  tokens_tolower %>%                                                    
+  
+  tokens_remove(stopwords('en')) %>%                                     
+  
+  tokens_wordstem %>%
+  
+  dfm
+  
+textplot_wordcloud(terror_dtm, max_words = 50)     ## top 50 (most frequent) words
+
+```
+
+## TEST CODE: Corpa: Category Variables
+```{r TEST: CORPA: Title}
+ 
+    c_rdt <- corpus(refDoc_absNote)
+    c_adt <- corpus(absDoc_AbsNote)
+# Error: Cannot combine corpora with duplicated document names
+    
+  titleCorp <- c_rdt + c_adt
+
+```
+- - Error: Cannot combine corpora with duplicated document names
+ 
+ ##
+```{r KWIC: DTM: WordCloud}
+# create corpa from KWIC
+
+TK <- kwic(tokens(refDoc_manTags), '*topia*', window = 10)
+head(TK, 5)
+dim(TK)
+# [1] 375   7
+# terror <- kwic(tokens(corp), 'terror*')
+terror_corp <- corpus(TK)
+terror_dtm <- terror_corp %>%
+  tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   
+  tokens_tolower %>%                                                    
+  tokens_remove(stopwords('en')) %>%                                     
+  tokens_wordstem %>%
+  dfm
+
+textplot_wordcloud(terror_dtm, max_words = 50)     ## top 50 (most frequent) words
+
+```
+
+```{r TEST: Kwic: Single Term}
+terror <- kwic(tokens(refCorp), 'dystopia')
+terror_corp <- corpus(terror)
+#S Error in `[<-.data.frame`(`*tmp*`, field, value = "pre") : replacement has 1 row, data has 0
+
+```
+
+#
+#
+#
+# Test Code
+## TEST CODE: Compare Corpa
+    
+    nTleDtm
+    
+    refDtm
+Error in intI(i, n = x@Dim[1], dn[[1]], give.dn = FALSE) : 
+logical subscript too long (189, should be 12)
+
+    absDtm
+Error in intI(i, n = x@Dim[1], dn[[1]], give.dn = FALSE) : 
+logical subscript too long (6730, should be 12)
+    
+ 
+
+```{r}
+        text2 <- absCorp + refCorp 
+        text2 <- tokens(text2)
+        
+text2Dfm <- dfm(text2)
+dtm
+
+  DysDoc <- docvars(text2Dfm)$Title == 'Dystopia'
+# Error in dtm[DysDoc, ] : Subscript out of bounds  
+  DysDtm <- dtm[DysDoc,]
+  textplot_wordcloud(DysDtm, max_words = 25)
+  
+```
+
+
+## Wordclouds & Freq: Word frequencies and wordclouds
+  
+      No features left after trimming with min_count = 3
+## TEST CODE: Word frequencies and wordclouds  
+
+    No features left after trimming with min_count = 3
+TESTdtm
+refDtm
+
+TESTdtm <- dfm(text2)
+dtm
+s_tle_refCorpSub
+
+
+```{r TEXT: TextPlot, TextStat: TESTdtm;}
+
+
+textplot_wordcloud(TESTdtm, max_words = 50)     ## top 50 (most frequent) words
+
+textplot_wordcloud(TESTdtm, max_words = 50, color = c('blue','red')) ## change colors
+
+textstat_frequency(TESTdtm, = 10)             ## view the frequencies 
+```
+
+
+### TESTED Varriables
+
+    Pass      
+
+          refCorp 
+          s_tle_refCorpSub
+
+  Fail
+    refDoc
+    refTok
+
+## WRITING: N-GRAMS
+
+Current Tokens return 0
+  including:
+    absTok
+    refTok
+Tokenizing Source Doc doesn't work 
+rTx_2953
+
+####  TEST CODE: nGram
+
+    refKwt  Signal: Titles 
+  sUto_tle_refKwt
+  sDyo_tle_refKwt
+      
+      TEST Ngram   
+ TEST_ngram <- tokens_ngrams( sUto_tle_refKwt, n = 2:4)
+ head( [[1]], 30)
+
+
+```{r TEST nGram, eval=FALSE, include=FALSE}
+
+testToken <- tokens( , remove_punct = TRUE )
+ndoc(testToken)
+
+TEST_ngram <- tokens_ngrams( , n = 2:4)
+
+summary(TEST_ngram[[1]], 30)
+
+```
+
+
+
+
+
+## TEST CODE: corpus to document-feature matrix (DFM)
+dfm() constructs a document-feature matrix (DFM) from a tokens object
+
+
+```{r TEST: DTM, echo=TRUE}
+  
+TESTcorp <- corpus( )
+
+text2 <- TESTcorp %>%
+  tokens(remove_punct = T, remove_numbers = T, remove_symbols = T) %>%   ## tokenize, removing unnecessary noise
+  tokens_tolower %>%                                                     ## normalize
+  tokens_remove(stopwords('en')) %>%                                     ## remove stopwords (English)
+  tokens_wordstem                                                        ## stemming
+text2
+
+text2 <- dfm(text2)
+dtm
+
+summary(text2)
+
+
+
+```
+
+    refCorp DFM
+```{r TEST: DFM: refCorp, eval=FALSE, include=FALSE}
+
+# refCorp 
+
+prep_dfm_Ref <- 
+  tokens(refCorp,
+         remove_numbers = TRUE, remove_punct = TRUE) %>%
+  dfm(tolower = TRUE)
+
+# remove stop words and stem words
+refDfm <- prep_dfm_Ref %>%
+  dfm_remove(stopwords("en")) %>%
+  dfm_wordstem("en")
+
+# inspect
+refDfm 
+
+# sort into alphabetical order of features, to match book example
+refDfm <- refDfm[, order(featnames(refDfm))]
+
+# inspect some documents in the dfm
+head(refDfm,8)
+
+```
+
+
+
+
+
+## TEST CODE: Tokenize/ Token Select / 
+
+### Code: Token Select: Remove: StopWords
+
+```{r Token Slect: Remove StopWOrds, eval=FALSE, include=FALSE}
+
+toks_TEST <- tokens_select(absTok, pattern = stopwords("en"), selection = "remove")
+print(toks_TEST)
+
+#Token Remove
+
+toks_TEST2 <- tokens_remove(RefTok, pattern = stopwords("en"))
+head(toks_TEST2,2)
+
+toks_TEST3 <- 
+  tokens_select(RefTok, pattern = c("utop*", "dystop*"), padding = TRUE)
+
+print(toks_TEST3)
+
+toks_TEST4 <- 
+  tokens_select(RefTok, pattern = c( "post-apocalypse","apocalypse", "apocalyptic", "end of the world"), padding = TRUE)
+print(toks_TEST4)
+```
+
+### Code: Tokenize: Remove Grammatical Function words
+```{r Tokenize: Remove Grammatical Function words, eval=FALSE, include=FALSE}
+# and Remove Grammatical Function words
+
+toks_ <- tokens_select(, pattern = stopwords("en"), selection = "remove")
+print( )
+
+toks_ <- tokens_select(, pattern = stopwords("en"), selection = "remove")
+print( )
+
+toks_ <- tokens_select(, pattern = stopwords("en"), selection = "remove")
+print( )
+
+toks_ <- tokens_select(, pattern = stopwords("en"), selection = "remove")
+print( )
+
+toks_ <- tokens_select(, pattern = stopwords("en"), selection = "remove")
+print( )
+
+toks_ <- tokens_select(, pattern = stopwords("en"), selection = "remove")
+print( )
+```
+

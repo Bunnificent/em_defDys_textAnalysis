@@ -1,0 +1,799 @@
+---
+title: "Defining Dystopia: Text Analysis"
+author: "audra white"
+date: "3/11/2021"
+output: html_document
+---
+Author: Audra Jamai White
+Date:
+Title: Defining Dystopia
+Document URL: Github - 
+Dataset Information: 
+### Set Up, Load Libraries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tinytex)
+library(devtools)
+library(gitcreds)
+library(tidyverse)
+
+# Text Analysis
+library(quanteda)
+library(quanteda.textmodels)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(newsmap)
+library(seededlda)
+
+# For pulling in text from various file formats
+library(readtext) 
+
+```
+
+
+
+# Code Group: Corpa Stuff
+
+absCorp - Corpa from library search returns with abstracts
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyverse)
+
+# read csv into a data.frame
+
+rtData <- readtext("C:/Users/white/iCloudDrive/Documents/1_DACSS_UMassAmherst/dysSearch8k.csv",text_field = "Abstract Note")
+      colnames(rtData)
+      
+absData<- rtData
+
+absCorp<- corpus(absData)
+                     
+ view(summary(absCorp))
+ view(head(absCorp))
+
+```
+
+Tokenize Corpa
+
+```{r Tokenize: AbsCorp  eval=FALSE, include=FALSE}
+# Tokenize 
+
+absTok <- tokens(
+         absCorp,
+         remove_punct = TRUE, 
+         remove_numbers = FALSE, 
+         remove_symbols = TRUE,
+         remove_separators = TRUE,
+         split_hyphens = FALSE,
+         include_docvars = TRUE,
+         padding = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern = stopwords('en'))
+ 
+
+View(absTok)
+```
+
+## Corpus Subset: Signal & Noise
+
+```{r Corpus Subset: absCorp: Signal, include=FALSE}
+
+s_tle_absCorpSub <- corpus_subset(absCorp, Title %in% 
+  c("Dystopia", "Dystopias","Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+  "Utopia","Utopias", "Utopian","Utopianism")
+  )   
+
+s_mTag__absCorpSub <- corpus_subset(absCorp, Manual.Tags %in%
+  c("Dystopia", "Dystopias","Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+  "Utopia","Utopias", "Utopian","Utopianism")
+  )   
+summary(s_mTag__absCorpSub)
+```
+
+```{r Corpus Subset: absCorp: Noise, include=FALSE}
+
+n_tle_absCorpSub <- corpus_subset(absCorp, Title %in% 
+  c("apocalypse", "apocalyptic","post-apocalypse",
+  "end of the world", "post apocalyptic",
+  "Technology", "Society","Fiction", "Science Fiction",
+  "Novel", "Literature")
+)
+
+
+n_mTag_absCorpSub <- corpus_subset(absCorp, Manual.Tags %in%
+  c("apocalypse", "apocalyptic","post-apocalypse",
+  "end of the world", "post apocalyptic",
+  "Technology", "Society","Fiction", "Science Fiction",
+  "Novel", "Literature")
+)
+
+```
+
+
+# CODE: DOCVARS: Document Level Variables
+absDoc_title 
+absDoc_manTags 
+absDoc_itemType 
+absDoc_pubTle 
+absDoc_pubYear 
+absDoc_pubLsr
+
+```{r Docvars: asbCorp Group , echo=TRUE}
+
+absDoc_title <- docvars(absCorp, field = "Title")
+absDoc_manTags <- docvars(absCorp, field = "Manual.Tags")
+absDoc_itemType <- docvars(absCorp, field = "Item.Type")
+absDoc_pubTle <- docvars(absCorp, field = "Publication.Title")
+absDoc_pubYr <- docvars(absCorp, field = "Publication.Year")
+absDoc_pubLsr <- docvars(absCorp, field = "Publisher")
+
+```
+
+
+# CODE GROUP: Tokens
+
+### CODE: Tokens: Docvars Categories
+```{r Tokenize: absDoc Group, echo=TRUE}
+
+title_absTok <- tokens(absDoc_title)
+
+manTag_absTok <- tokens(absDoc_manTags)
+
+itmTyp_absTok <- tokens(absDoc_itemType)
+
+pubTle_absTok <- tokens(absDoc_pubTle)
+
+pubLsr_absTok <- tokens(absDoc_pubLsr)
+
+```
+### CODE: Token KWIC: Signal vs Noise: Dyo Uto
+
+
+```{r Kwic: Signal: absTok Group}
+
+    # Title
+sUto_tle_absKwt <- 
+  kwic(title_absTok, pattern = 
+       c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+sDyo_tle_absKwt <- 
+  kwic(title_absTok, pattern = 
+        c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism")
+)
+
+# 
+# <- 
+#   kwic( , pattern = 
+#           c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+#             "Utopia","Utopias", "Utopian","Utopianism")
+#   )
+# 
+# <- 
+#   kwic( , pattern = 
+#           c("Dystopia","Dystopias", "Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+#             "Utopia","Utopias", "Utopian","Utopianism")
+#   )
+
+   
+
+```
+
+
+  Signal: absKwt Group 
+
+Signal: Titles sUto_tle_absKwt sDyo_tle_absKwt
+
+Signal: Abstract Note sUto_aNote_absKwt
+sDyo_aNote_absKwt
+
+Signal: Manual Tags sUto_mTags_absKwt
+sDyo_mTags_absKwt
+```{r}
+# Manual Tags 
+sUto_mTags_absKwt <- kwic(manTags_absTok,pattern =
+c("Dystopia","Dystopias",
+"Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism") )
+
+sDyo_mTags_absKwt <- kwic(manTags_absTok,pattern
+= c("Dystopia","Dystopias",
+"Dystopian","Dystopic","Anti-Utopian","AntiUtopian",
+"Utopia","Utopias", "Utopian","Utopianism") )
+
+```
+
+
+  absKwt Wildcard Group
+
+```{r Kwic: Signal: absTok Group: Wildcard, eval=FALSE, include=FALSE}
+
+# Titles 
+sUti_tle_absKwt <- kwic(title_absTok,
+          pattern = "utopi*", )
+
+sDyi_tle_absKwt <- kwic(title_absTok,
+          pattern = "dystopi*", )
+
+    # Abstract Note
+sUti_aNote_absKwt <- kwic(absNote_absTok,
+          pattern = "utopi*", )
+
+sDyi_aNote_absKwt <- kwic(absNote_absTok,
+          pattern = "dystopi*",)
+```
+
+    # Manual Tags
+```{r}
+sUti_mTags_absKwt <- kwic(manTags_absTok, pattern
+= "utopi*", )
+
+sDyi_mTags_absKwt <- kwic(manTags_absTok, pattern
+= "dystopi*", )
+
+```
+
+
+### CODE: Token KWIC: Noise: A,T, D, S
+
+```{r Kwic: Noise: absTok Group, eval=FALSE, include=FALSE}
+
+nApo_mTag_refKwt <- kwic(manTags_refTok , pattern
+= c("post-apocalypse","apocalypse", "apocalyptic",
+"end of the world") )
+
+nSub_mTag_refKwt <- kwic(manTags_refTok , pattern
+= c("Novel", "Literature") )
+
+nTop_mTag_refKwt <- kwic(manTags_refTok , pattern
+= c("Technology", "Society","Fiction") )
+
+
+# Titles 
+nApo_tle_absKwt  <- 
+  kwic( title_absTok, pattern = 
+          c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+        )
+
+nSub_tle_absKwt  <-
+  kwic( title_absTok, pattern = 
+          c("Novel", "Literature")
+        ) 
+            
+
+nTop_tle_absKwt <- 
+  kwic( title_absTok, pattern = 
+          c("Technology", "Society","Fiction")
+        )
+
+# Abstract Note
+nApo_aNote_absKwt <- 
+  kwic( absNote_absTok, pattern = 
+          c("post-apocalypse","apocalypse", "apocalyptic", "end of the world")
+        )
+
+nSub_aNote_absKwt  <- 
+  kwic( absNote_absTok, pattern = 
+          c("Novel", "Literature")
+        ) 
+            
+nTopaNote_absKwt <- 
+  kwic(absNote_absTok,
+       pattern = 
+         c("Technology", "Society","Fiction")
+       )
+```
+
+``` {r}
+# Manual Tags 
+nApo_mTag_absKwt <- kwic(
+manTag_absTok, pattern =
+c("post-apocalypse","apocalypse", "apocalyptic",
+"end of the world") )
+
+nSub_mTag_absKwt <- kwic( manTag_absTok, pattern
+= c("Novel", "Literature") )
+
+nTop_mTag_absKwt<- kwic( manTag_absTok, pattern =
+c("Technology", "Society","Fiction") )
+
+Noise: Titles nApo_tle_absKwt nTop_tle_absKwt
+nSub_tle_absKwt
+
+```
+### CODE: Kwic to Copra 
+
+```{r CODE: CORPUS: Kwic: Titles, include=FALSE}
+# TITLE
+  
+  # Utopia
+    
+    cRef_uti_Tle <- corpus(sUti_tle_refKwt)
+    cRef_uto_Tle <- corpus(sUto_tle_refKwt)
+    
+    cAbs_uti_Tle <- corpus(sUti_tle_absKwt)
+    cAbs_uto_Tle <- corpus(sUto_tle_absKwt)
+  
+  # Dystopia
+    
+    cRef_dyi_Tle <- corpus(sDyi_tle_refKwt)
+    cRef_dyo_Tle <- corpus(sDyo_tle_refKwt)
+    
+    cAbs_dyi_Tle <- corpus(sDyi_tle_absKwt)
+    cAbs_dyo_Tle <- corpus(sDyo_tle_absKwt )
+    
+  # Noise
+    
+    cRef_apo_Tle <- corpus(nApo_tle_refKwt)
+    cRef_top_Tle <- corpus(nTop_tle_refKwt)
+    cRef_sub_Tle <- corpus(nSub_tle_refKwt)
+    
+    cAbs_apo_Tle <- corpus(nApo_tle_absKwt)
+    cAbs_top_Tle <- corpus(nTop_tle_absKwt)
+    cAbs_sub_Tle <- corpus(nSub_tle_absKwt)
+    
+```
+
+
+```{r CODE: CORPUS: Title Combo [absCorp], echo=FALSE}
+
+# absCorp - Titles  
+
+
+# Error: absCorp Dystopi* + Utopi*
+  
+        # 2104 documents: [abs] Utopi + [ref+abs] Apo Terms
+    abs_apoUti_tleCom <- 
+      cAbs_uti_Tle + 
+      cAbs_apo_Tle
+        
+        # 2864  documents: [abs] Dystopi* + [ref+abs] Apo Terms
+    abs_apoDyi_tleCom <-
+      cAbs_dyi_Tle + 
+      cAbs_apo_Tle
+
+
+        # 1722 documents: [abs] Apo Terms + Topic
+    abs_apoTop_tleCom <- 
+      cAbs_apo_Tle + 
+      cAbs_top_Tle 
+
+
+        #  1014 documents: [abs] Apo Terms + Subject
+    abs_apoSub_tleCom <- 
+      cAbs_apo_Tle + 
+      cAbs_sub_Tle 
+
+        # 2118 documents: [abs] Utopi + [ref+abs] Apo Terms
+    absUti_apoTleCom <-
+        cAbs_uti_Tle + 
+        apo_tleCom 
+    
+# Error: Cannot combine corpora with duplicated document names
+#     For Documentation See defDysVarriables.Rmd 
+    # WordCloud: Kwic Titles: Variables
+    ### Kwic Titles: [absCorp] - Title Corp 
+     
+
+```
+
+#    WordCloud & TextStat Frequency
+
+### CODE: Word Cloud: Kwic Titles
+
+### CODE: Word Cloud: Titles: refCorp + absCorp Combos
+
+#### CODE: Word Cloud: Titles: [r+aCom] 2574 Doc: Dystopia Wildcard
+
+
+
+```{r CODE: DFM: Dys Wild Card Title, echo=FALSE}
+# Tokenize & DTM
+  
+  dyi_tleDtm <- dyi_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+```
+
+```{r CODE: Wordcloud: Dys Wild Card: Title, echo=FALSE}
+# Generate Word Cloud
+  
+textplot_wordcloud(dyi_tleDtm, max_words = 25)
+textstat_frequency(dyi_tleDtm, 25)
+
+textplot_wordcloud(dyi_tleDtm, max_words = 50)
+textstat_frequency(dyi_tleDtm, 50)
+
+textplot_wordcloud(dyi_tleDtm, max_words = 100)
+textstat_frequency(dyi_tleDtm, 100)
+```
+
+#### CODE: Word Cloud: Titles: [r+aCom] 728 Doc: Subjects
+
+```{r CODE: DFM: , echo=FALSE}
+# Tokenize & DTM
+# 728 documents: Subjects [ref+abs] 
+
+  sub_tleComDtm <-  sub_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = F) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+# Generate Word Cloud
+
+textplot_wordcloud(sub_tleComDtm, max_words = 100)
+
+textstat_frequency(sub_tleComDtm, 100)
+
+```
+
+#### CODE: Word Cloud: Titles: [r+aCom] 1464 Doc: Topics
+
+```{r CODE: DFM: , echo=FALSE}
+# Tokenize & DTM
+# 1464 documents: Topics [ref+abs] 
+
+  top_tleComDtm <-  top_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 3) %>%                                     
+    tokens_wordstem %>%
+    dfm
+# Generate Word Cloud
+# 
+
+textplot_wordcloud(top_tleComDtm, max_words = 100)
+
+textstat_frequency(top_tleComDtm, 100)
+```
+
+#### CODE: Word Cloud: Titles: [r+aCom] 322 Doc: Apocryphal
+
+```{r CODE: DFM: , echo=FALSE}
+# Tokenize & DTM
+# 322 documents: Apocryphal [ref+abs]
+
+ apo_tleComDtm <- apo_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+```
+
+```{r CODE: Wordcloud: , echo=FALSE}
+
+# Generate Word Cloud
+# 322 documents: Apocryphal [ref+abs]
+
+textplot_wordcloud(apo_tleComDtm, max_words = 100)
+
+textstat_frequency(apo_tleComDtm, 100)
+
+```
+
+#### CODE: Word Cloud: Titles: [r+aCom] 2588 Doc: Dystopi\* + Apo Terms
+
+```{r CODE: DFM: Titles: Dystopi Apo Terms, echo=FALSE}
+# Tokenize & DTM
+# 2588 documents: Dystopi* + Apo Terms
+  
+  dyiApo_tleDtm <- dyiApo_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+# Generate Word Cloud
+  
+textplot_wordcloud(dyiApo_tleDtm, max_words = 25)
+textstat_frequency(dyiApo_tleDtm, 25)
+
+textplot_wordcloud(dyiApo_tleDtm, max_words = 50)
+textstat_frequency(dyiApo_tleDtm, 50)
+
+textplot_wordcloud(dyiApo_tleDtm, max_words = 100)
+textstat_frequency(dyiApo_tleDtm, 100)
+
+
+```
+
+    NOTES:
+
+Unable to combine Utopia titles for refCorp &
+absCorp
+
+### CODE: Word Cloud: Titles: refCorp
+
+#### CODE: Word Cloud: Titles: [refCorp] 58 doc: Utopi\*
+
+58 Documents
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 58 Documents
+
+  cRef_uti_TleDtm <- cRef_uti_Tle %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+# Generate Word Cloud
+
+textplot_wordcloud(cRef_uti_TleDtm, max_words = 25)
+
+textstat_frequency(cRef_uti_TleDtm, 25)
+
+```
+
+#### CODE: Word Cloud: Titles: [refCorp] 1522 doc: Utopi + [r+aCom] Topic
+
+1522 documents
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 1522documents: [ref] Utopi + [ref+abs] Topic
+
+  ref_subTop_tleCompDtm <-  ref_subTop_tleComp%>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+
+# Generate Word Cloud
+
+textplot_wordcloud(ref_subTop_tleCompDtm, max_words = 100)
+
+textstat_frequency(ref_subTop_tleCompDtm, 100)
+
+```
+
+#### CODE: Word Cloud: Titles: [refCorp] 76 doc: Dystopi\* + Utopi\*
+
+76 documents
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 76 documents: [ref] Dystopi* + Utopi*
+
+   ref_DyiUti_tleComDtm <-  ref_DyiUti_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+
+# Generate Word Cloud
+
+textplot_wordcloud(ref_DyiUti_tleComDtm , max_words = 20)
+
+textstat_frequency(ref_DyiUti_tleComDtm , 20)
+
+```
+
+#### CODE: Word Cloud: Titles: [refCorp] 398 doc: Dystopi\* + Utopi\* + [r+aCom] Apo Terms
+
+398 documents: [refCorp] Dystopi\* + Utopi\* +
+[r+aCom] Apo Terms
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 398 documents: [refCorp] Dystopi* + Utopi* + [r+aCom] Apo Terms
+
+  refDyiUti_apoTeComDtm <- refDyiUti_apoTeCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+# Generate Word Cloud
+
+textplot_wordcloud(refDyiUti_apoTeComDtm, max_words = 100)
+
+textstat_frequency(refDyiUti_apoTeComDtm, 100)
+
+```
+
+### CODE: Word Cloud: Titles: absCorp
+
+        Error [absCorp] doc: Dystopi* + Utopi*
+        Error [absCorp] Utopi +  [r+aCom] Topic
+
+#### CODE:Word Cloud: Titles: 58 doc: [absCorp] Utopi\*
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+#  58 docs
+
+ cRef_uti_TleDtm <-  cRef_uti_Tle %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+dim(cRef_uti_TleDtm)
+
+
+# Generate Word Cloud
+
+textplot_wordcloud(cRef_uti_TleDtm, max_words = 50)
+
+textstat_frequency(cRef_uti_TleDtm, 50)
+
+```
+
+#### CODE:Word Cloud: Titles: 18 doc: [absCorp] Dystopi\*
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 
+
+  cRef_dyi_TleDtm <-  cRef_dyi_Tle %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+dim(cRef_dyi_TleDtm)
+
+# Cannot Generate Word Cloud
+
+```
+
+#### CODE:Word Cloud: Titles: 2864 doc: [absCorp] Dystopi\* + Utopi\* + [r+aCom] Apo Terms
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 
+
+  abs_apoDyi_tleComDtm <-  abs_apoDyi_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+
+# Generate Word Cloud
+
+textplot_wordcloud(abs_apoDyi_tleComDtm , max_words = 100)
+
+textstat_frequency(abs_apoDyi_tleComDtm , 100)
+
+```
+
+#### CODE:Word Cloud: Titles: 2104 doc: [absCorp] Utopi + [r+aCom] Apo
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 
+
+  abs_apoUti_tleComDtm <-  abs_apoUti_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+
+# Generate Word Cloud
+
+textplot_wordcloud(abs_apoUti_tleComDtm, max_words = 100)
+
+textstat_frequency(abs_apoUti_tleComDtm, 100)
+
+```
+
+#### CODE:Word Cloud: Titles: 1722 doc: [absCorp] Apo Terms + Topic
+
+```{r CODE: WordCloud: , echo=FALSE}
+# Tokenize & DTM
+# 1722 documents: [abs] Apo Terms + Topic
+
+  abs_apoTop_tleComDtm <- abs_apoTop_tleCom %>%
+    tokens(
+      remove_punct = T, 
+      remove_numbers = T, 
+      remove_symbols = T) %>%   
+    tokens_tolower %>%                                                    
+    tokens_remove(stopwords('en'),
+      min_nchar = 5) %>%                                     
+    tokens_wordstem %>%
+    dfm
+
+
+# Generate Word Cloud
+
+textplot_wordcloud(abs_apoTop_tleComDtm, max_words = 100)
+
+textstat_frequency(abs_apoTop_tleComDtm, 100)
+
+```
+
+## 
+
+# TBD Word Cloud - Generate Varriables
+
+## TBD: Signal VS Noise: Abstract
+
+## TBD: Signal VS Noise: Manual Tags
+
+## TBD: Signal VS Noise: \*\* Item Type\*\*
+
+# On Deck: Dictionary Search

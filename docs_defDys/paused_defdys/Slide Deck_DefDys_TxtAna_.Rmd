@@ -1,0 +1,37 @@
+---
+title: "Defining Dystopia Slide Deck"
+author: "audra white"
+date: "12/1/2021"
+output: powerpoint_presentation
+---
+
+```{r setup, include=FALSE}
+#Load Libraries
+library(tidyverse)
+library(quanteda)
+library(readtext)  # For pulling in text from various file formats
+
+
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Markdown
+
+## Slide with Bullets
+
+-   Bullet 1
+-   Bullet 2
+-   Bullet 3
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```

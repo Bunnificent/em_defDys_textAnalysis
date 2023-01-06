@@ -1,0 +1,149 @@
+---
+title: 'Quanteda test drive: LOTR'
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+Let's get our quanteda and LOTR on.
+
+Libraries first. R Studio should offer to install any missing libraries when the file loads, or use the "install" button in the Packages tab in the lower right quadrant of the window.
+
+```{r}
+library(tidyverse)
+library(quanteda)
+library("quanteda.textplots")
+library(readtext) 
+# For pulling in text from various file formats
+
+```
+
+Load the book's text. Downloaded from https://github.com/Nab-88/social-graphs-and-interactions/tree/master/datasets
+
+```{r}
+# read in corpa
+
+
+```
+
+This makes a big corpus of one document. It would be more informative to break it up into chapters, so we have things to contrast and compare and things to apply topics to. This requires some study of the raw data, not quite as easy as it appears here, to make sure it's broken up correctly. Some trial and error is inevitable.
+
+(Note that there are 3 chapter 1's in the book, for instance, in different sections.)
+
+```{r}
+chapters_corp <- 
+    corpus(lotr_corpus_df) %>%
+    corpus_segment(pattern = "CHAPTER\\s\\d+.*\\n", valuetype = "regex")
+summary(chapters_corp)
+```
+
+Extract the matched chapter title into a new document variable (docvar) called "pattern", and also rename each chapter with this variable:
+
+```{r}
+docvars(chapters_corp, "pattern") <- stringi::stri_trim_right(docvars(chapters_corp, "pattern"))
+docnames(chapters_corp) <- docvars(chapters_corp, "pattern")
+summary(chapters_corp, n = 3)
+```
+
+Next we have to tokenize the corpus and create its document feature matrix (dfm), in the process of which we also decide which features we don't want. We'll omit punctuation and stopwords.
+
+```{r}
+lotr_dfm <- tokens(chapters_corp, remove_punct = TRUE) %>% 
+  tokens_remove(stopwords("en")) %>% 
+    dfm()
+lotr_dfm
+```
+
+Top 20 words in the book?
+
+```{r}
+topfeatures(lotr_dfm, 20)
+```
+
+A wordcloud confirms that "said" is the most common (non-stopword) word:
+
+```{r}
+set.seed(100)
+library("quanteda.textplots")
+textplot_wordcloud(lotr_dfm, 
+                   min_count = 6, 
+                   random_order = FALSE, 
+                   rotation = 0.25, # vertically rotate 25% of the words
+                   max_words = 100, # limit to 100 words
+                   color = RColorBrewer::brewer.pal(8, "Dark2"))
+```
+
+How about a wordcloud of just chapter 1?
+
+```{r}
+lotr_dfm_ch1 <- chapters_corp %>%
+  # Filter out just chapter 1 by name; the rest is the same
+  corpus_subset(pattern == "Chapter 1. Concerning Hobbits") %>%
+  tokens(remove_punct = TRUE) %>% 
+  tokens_remove(stopwords("en")) %>% 
+    dfm()
+
+textplot_wordcloud(lotr_dfm_ch1, 
+                   # lower the min_count a little
+                   min_count = 4, 
+                   random_order = FALSE, 
+                   rotation = 0.25, # vertically rotate 25% of the words
+                   max_words = 100, # limit to 100 words
+                   color = RColorBrewer::brewer.pal(8, "Dark2"))
+```
+
+Now on to topic modeling. What are the topics in the book, and what chapters are aligned with them? For this we need the stm package (for Structural Topic Models; there are other types of models, like LDA or stLDA-c).
+
+This takes a bit of time to run.
+
+```{r}
+library(stm)
+
+# Let's go with 25 topics for now.
+k = 25
+
+lotr_stm <- convert(lotr_dfm, to = "stm")
+
+lotr_stm_out <- stm(
+  documents = lotr_stm$documents,
+  vocab = lotr_stm$vocab,
+  data = lotr_stm$meta,
+  K = k,
+  seed = 1234,
+  init.type = "Spectral",
+  verbose = FALSE
+)
+
+```
+
+Show and print the topic labels, the most frequent words in each topic:
+
+```{r}
+labelTopics(lotr_stm_out)
+plot(lotr_stm_out, type = "summary")
+```
+
+Create the topic strings, using the `frex` parameter of the topic labels, choosing words that are the most `fr`equent *and* `ex`clusive in each topic, not just the most common words.
+
+
+```{r}
+myTopicNames <- labelTopics(lotr_stm_out, n = 5)$frex
+# set up an empty vector
+myTopicLabels <- rep(NA, k)
+
+# set up a loop to go through the topics and collapse the words to a single name
+for (i in 1:k) {
+  myTopicLabels[i] <- paste(myTopicNames[i,], collapse = "_")
+}
+
+# print the names
+myTopicLabels
+```
+
+Find the top document for topic 9, "farmer_dogs_maggot_ferry_lane". We won't actually run this because the result is a whole chapter! But it's how you find a document in your corpus that has the highest likelihood of being associated with topic 9 (for instance).
+
+```{r}
+head(findThoughts(lotr_stm_out, texts = chapters_corp, topics=c(9), n=1))
+```
+
+So the chapter (document) most associated with topic 9 ("farmer_dogs_maggot_ferry_lane") is "Chapter 4. A Short Cut to Mushrooms"!
